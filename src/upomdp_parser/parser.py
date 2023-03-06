@@ -3,10 +3,8 @@ import inspect
 import interval_parser
 
 
-
 def export_to_drn(pomdp, export_file):
     stormpy.export_to_drn(pomdp, export_file)
-
 
 
 def parse_prism(prism_file, property_string):
@@ -24,7 +22,6 @@ def parse_prism(prism_file, property_string):
     return pomdp, pomdp_parameters
 
 
-
 def parse_drn(drn_file, property_string):
     drn = stormpy.build_parametric_model_from_drn(drn_file)
 
@@ -38,7 +35,6 @@ def parse_drn(drn_file, property_string):
     # get all parameters in the model
     pomdp_parameters = pomdp.collect_probability_parameters()
 
-
     return pomdp, pomdp_parameters
 
 
@@ -46,6 +42,7 @@ def main():
     # basic idea, load the model with parameters on the transitions where intervals should occur,
     # load a second file mapping these parameters to intervals
 
+    # if you have a drn file instead of a prism file, use parse_drn(...) instead
     upomdp, params = parse_prism("aircraft_small.prism", "Pmax=?[F \"goal\"]")
     intervals, items = interval_parser.parse_model_interval(upomdp, params, "aircraft_small.intervals")
 
