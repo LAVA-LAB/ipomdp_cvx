@@ -307,9 +307,9 @@ class POMDP:
     def print_constants(self):
         for c in self.program.constants:
             if c.defined:
-                print("Constant:", c.name, " type:", c.type, " Definition:", c.definition)
+                print("Constant:", c.name, " type:", c.tp, " Definition:", c.definition)
             else:
-                print("Constant:", c.name, " type:", c.type, " Definition: Undefined")
+                print("Constant:", c.name, " type:", c.tp, " Definition: Undefined")
 
 ## Class to explire and export a pMC model.
 #
