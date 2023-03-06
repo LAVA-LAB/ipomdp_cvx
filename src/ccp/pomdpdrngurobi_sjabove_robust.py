@@ -8,7 +8,7 @@ import stormpy.examples
 import stormpy.examples.files
 import time
 from gurobipy import *
-import interval_parser
+import ccp.interval_parser as interval_parser
 #import value_iterator
 import stormpy.pomdp
 import time
@@ -1182,14 +1182,13 @@ class QcqpRewSolver():
 
 
 
-def pPOMDP_parser():
+def main(model_path, interval_path, formula_str, threshold):
     t0 = time.time()
 
     #model_path = "collision_partial_obs_2d_upd_hobs_20_small_2.drn"
     #interval_path = "collision_partial_obs_2d_upd_hobs_20_small.intervals"
     #formula_str = "P=? [F \"goal\"]"
-
-    model_path, interval_path, formula_str, threshold = input_files()
+    #model_path, interval_path, formula_str, threshold = input_files()
 
     opts = stormpy.DirectEncodingParserOptions()
     opts.build_choice_labels = True
@@ -1224,7 +1223,7 @@ def pPOMDP_parser():
     print("Number of transitions: {}".format(pmc.nr_transitions))
     print("applied pmc")
     path_pmc = "export_" + str(memval) + "_mem_" + model_path
-    stormpy.export_parametric_to_drn(pmc, path_pmc)
+    stormpy.export_to_drn(pmc, path_pmc)
     print("built model")
     #print(model.initial_states)
     fsc_parameters = pmc.collect_probability_parameters() - pomdp.collect_probability_parameters()
@@ -1476,6 +1475,7 @@ def find_rew0_states(property, model):
 
 
 if __name__ == '__main__':
-    pPOMDP_parser()
+    model_path, interval_path, formula_str, threshold = input_files()
+    main(model_path, interval_path, formula_str, threshold)
 
 
