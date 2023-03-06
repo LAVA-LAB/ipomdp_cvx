@@ -75,7 +75,7 @@ def drn_aircraft():
     policy = solve_pomdp(path, prop)
 
 if __name__ == "__main__":
-    prism_maze()
+    #prism_maze()
     #drn_maze()
     #prism_maze2()
     #drn_maze2()
