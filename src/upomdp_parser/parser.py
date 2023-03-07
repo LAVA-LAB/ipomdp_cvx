@@ -1,7 +1,7 @@
 import stormpy
 import inspect
 import interval_parser
-
+from stormpy import *
 
 def export_to_drn(pomdp, export_file):
     stormpy.export_to_drn(pomdp, export_file)
@@ -49,6 +49,7 @@ def main():
     # loop over the model
     for state in upomdp.states:
         for action in state.actions:
+            print(stormpy.ChoiceLabeling.get_labels_of_choice(upomdp.choice_labeling, action.id))
             for transition in action.transitions:
                 transition_value = transition.value()
                 if transition_value.is_constant():
@@ -73,8 +74,9 @@ def main():
                                     upper_bound = intervals[term.monomial[0][0].name].get_upperbound()
                                     lower_bound = intervals[term.monomial[0][0].name].get_lowerbound()
                                     interval_str = "[{},{}]".format(lower_bound, upper_bound)
+                                    lbl = stormpy.ChoiceLabeling.get_labels_of_choice(upomdp.choice_labeling, action.id)
                                     print(
-                                        f"transition ({state}, {action}, {transition.column}) with parameter {name} has interval {interval_str}")
+                                        f"transition ({state}, {lbl}, {transition.column}) with parameter {name} has interval {interval_str}")
                             else:
                                 continue
 
