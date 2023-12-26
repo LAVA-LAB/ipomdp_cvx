@@ -49,7 +49,6 @@ def main():
     # loop over the model
     for state in upomdp.states:
         for action in state.actions:
-            print(stormpy.ChoiceLabeling.get_labels_of_choice(upomdp.choice_labeling, action.id))
             for transition in action.transitions:
                 transition_value = transition.value()
                 if transition_value.is_constant():

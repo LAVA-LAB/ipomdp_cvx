@@ -1,0 +1,42 @@
+results
+
+
+SC-maze5.prism
+memval = 3
+result = 6.4654720526199645
+
+SC-maze5.prism
+memval = 9
+result = 6.465423968298397
+
+
+
+avoid.prism
+memval = 3
+result = 4.59025050199936
+
+avoid.prism
+memval = 9
+result = 4.590250574611105
+
+ 
+ 
+evade.prism
+memval = 3
+result = 14.162563880526232
+
+evade.prism
+memval = 9
+result = 14.180741233955427
+
+ 
+ 
+intercept.prism
+memval = 3
+result = 3.045579366703637
+
+intercept.prism
+memval = 9
+result = 3.045581290887405
+
+ 
