@@ -637,6 +637,9 @@ class QcqpSolver_affine_simple_fun():
                         self.solver_params=solution
                         #print("{0}, {1}".format(ansval, self.model_check_timer+self.solver_timer+self.encoding_timer))
                         results.append((ansval, self.model_check_timer+self.solver_timer+self.encoding_timer))
+                        print("{0}, {1}".format(bestval,
+                                                self.model_check_timer + self.solver_timer + self.encoding_timer))
+
                         return results, "policy evaluation passed threshold"
 
                         #return QcqpResult(self._pVars[initstate].x, parameter_values)
@@ -674,6 +677,9 @@ class QcqpSolver_affine_simple_fun():
                     #terminate if the trust region is too small
                     if trust_region<1+1e-4:
                         print("Early termination due to small trust region {0}: ".format(str(i)))
+                        print("{0}, {1}".format(bestval,
+                                                self.model_check_timer + self.solver_timer + self.encoding_timer))
+
                         return results, "small trust region"
                         #print("p[init] = " + str(ansval))
                         #print("SCP parameter values: ")
@@ -686,6 +692,8 @@ class QcqpSolver_affine_simple_fun():
                 trust_region = ((trust_region - 1) / 1.5 + 1)
                 if trust_region < 1 + 1e-4:
                     print("Early termination due to small trust region {0}: ".format(str(i)))
+                    print("{0}, {1}".format(bestval, self.model_check_timer + self.solver_timer + self.encoding_timer))
+
                     return results, "small trust region"
                     #print("p[init] = " + str(bestval))
                     #print("SCP parameter values: ")
@@ -695,12 +703,7 @@ class QcqpSolver_affine_simple_fun():
             #if the computation time exceeds the time-out, break
             if self.model_check_timer+self.solver_timer+self.encoding_timer>self._options.timeout:
                 print("terminating because of timeout")
-
-
-
-
-
-
+                print("{0}, {1}".format(bestval, self.model_check_timer + self.solver_timer + self.encoding_timer))
                 return results, "timeout of > {}".format(self._options.timeout)
                 #print("printing best values and seconds")
                 #for item in self.solver_output:
@@ -712,6 +715,7 @@ class QcqpSolver_affine_simple_fun():
             self._remove_set = []
 
             self._encoding.update()
+        print("termination due to max iterations reached: " + str(options.maxiter))
         return results, "max iterations reached"
 
 # function that runs
@@ -816,7 +820,10 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
 
     model_info = dict()
     model_info["model name"] = path
+    model_info["interval file"] = interval_path
     model_info["objective"] = formula_str
+    model_info["timeout"] = timeout
+    model_info["max iterations"] = maxiter
 
     t0 = time.time()
 
@@ -865,6 +872,7 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
     print(model_info)
     print("\n")
 
+    t1 = time.time()
     solver = QcqpSolver_affine_simple_fun()
     solver_results, solver_exit = solver.run(pmc,  fsc_parameters, pomdp_parameters,properties, prob0E, prob1A, threshold, direction, options,intervals,items,True)
 
@@ -897,12 +905,17 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
         result = region_checker.get_bound_all_states(env, region, maximise=False)
         eval_results[eval_set_path] = result.at(pmc.initial_states[0])
         #ansval = result.at(pmc.initial_states[0])
+        if eval_set_path == interval_path:
+            t1_end = time.time()
+            solver_results.append((eval_results[interval_path], t1_end - t1))
 
     tend = time.time()
 
     print("Final result: ", eval_results[interval_path])
-    print("Total time: ", str(tend - t0))
+    print("Total solver time: ", str(tend - t1))
+    print("Total computation time: ", str(tend - t0))
 
+    model_info["total solver time"] = str(tend - t1)
     model_info["total computation time"] = str(tend - t0)
     model_info["final result"] = eval_results[interval_path]
 

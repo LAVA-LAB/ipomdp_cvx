@@ -161,8 +161,8 @@ class QcqpSolver_affine_simple_fun():
 
         for state in model.states:
             #print the number of states in the loop
-            if int(state.id) % 10000 == 0:
-                print("Encoding through states",state.id)
+            #if int(state.id) % 10000 == 0:
+            #    print("Encoding through states",state.id)
             start2 = time.time()
             #for initial iteration, build everything, including uncertain constraints
             if i==1:
@@ -552,12 +552,12 @@ class QcqpSolver_affine_simple_fun():
         assert direction in ["above", "below"]
         if direction == "above":
             raise RuntimeError("Direction == above is currently not supported.")
-        if not options.silent:
-            print("Number of pmc states: {}".format(model.nr_states))
-            print("Number of pmc transitions: {}".format(model.nr_transitions))
-            print("Labels: {}".format(model.labeling.get_labels()))
-            print(model.model_type)
-            print("Number of states: {}".format(model.nr_states))
+        #if not options.silent:
+        #    print("Number of pmc states: {}".format(model.nr_states))
+        #    print("Number of pmc transitions: {}".format(model.nr_transitions))
+        #    print("Labels: {}".format(model.labeling.get_labels()))
+        #    print(model.model_type)
+        #    print("Number of states: {}".format(model.nr_states))
 
         results = []
 
@@ -572,7 +572,7 @@ class QcqpSolver_affine_simple_fun():
         for x in self._parameters:
             solution[x]=stormpy.RationalRF(0.5)
         regiondict=dict()
-        print("region check")
+        #print("region check")
         # Go over interval params to create regions
         for x in self._interval_parameters:
             for item in items:
@@ -581,7 +581,7 @@ class QcqpSolver_affine_simple_fun():
 
         #Instantiate the robust model checking
         region = stormpy.pars.ParameterRegion(regiondict)
-        print(region)
+        #print(region)
         instantiator = stormpy.pars.PartialPDtmcInstantiator(model)
         instantiated_model = instantiator.instantiate(solution)
 
@@ -600,7 +600,7 @@ class QcqpSolver_affine_simple_fun():
         self.model_check_timer+=end_check-start_check
         #initialize param values
         self._paraminit = dict([[x.id, float(stormpy.RationalRF(solution[x]))] for x in parameters])
-        print("total model check time:",self.model_check_timer)
+        #print("total model check time:",self.model_check_timer)
         #print(paraminit)
         initstate = int(model.initial_states[0])
         #
@@ -613,10 +613,12 @@ class QcqpSolver_affine_simple_fun():
         #print(pinit)
         #set best found value
         bestval=self._pinit[initstate]
-        print("model checking ans:",self._pinit[initstate])
+        #print("model checking ans:",self._pinit[initstate])
 
         results.append((bestval, self.model_check_timer))
         #print(bestval)
+        print("-------------\n\nresult, time")
+        print("{0}, {1}".format(bestval, self.model_check_timer))
 
         # The penalty parameter for constraint violation
 
@@ -658,17 +660,17 @@ class QcqpSolver_affine_simple_fun():
 
             start3 = time.time()
             self._encoding.setObjective(self._objective, GRB.MINIMIZE)
-            print('Solving...')
+            #print('Solving...')
             self._encoding.optimize()
             t3 = time.time()
             self.solver_timer += (t3 - start3)
-            print("Solver time :" + str(t3 - start3))
-            print("total solver time:",self.solver_timer)
-            print("total encoding time:",self.encoding_timer)
-            print("total robust encoding time:",self.robust_encoding_timer)
+            #print("Solver time :" + str(t3 - start3))
+            #print("total solver time:",self.solver_timer)
+            #print("total encoding time:",self.encoding_timer)
+            #print("total robust encoding time:",self.robust_encoding_timer)
 
-            print("num iteration",i)
-            print("trust_region",trust_region)
+            #print("num iteration",i)
+            #print("trust_region",trust_region)
 
 
             # Prints the maximum violation
@@ -678,10 +680,6 @@ class QcqpSolver_affine_simple_fun():
                     val = self._tau[state].x
                     if val > maxx:
                         maxx = val
-
-                if not options.silent:
-                    print("Max vio :", maxx)
-                    #print("p =", pVars[initstate].x)
 
 
                 parameter_values = dict([[id, param_var.x] for id, param_var in self._paramVars.items()])
@@ -712,15 +710,15 @@ class QcqpSolver_affine_simple_fun():
                     region_checker = stormpy.pars.create_region_checker(env, instantiated_model, properties[0].raw_formula,
                                                                         allow_model_simplification=False)
 
-                    print("region check")
+                    #print("region check")
                     result = region_checker.get_bound_all_states(env, region, maximise=True)
                     end_check = time.time()
                     self.model_check_timer += end_check - start_check
 
                     self._paraminit = dict([[x.id, float(stormpy.RationalRF(solution[x]))] for x in self._parameters])
-                    print("model checking ans:")
+                    #print("model checking ans:")
                     ansval=result.at(model.initial_states[0])
-                    print(ansval)
+                    #print(ansval)
                     #terminate if the result is better than threshold
                     if ansval < threshold:
 
@@ -733,6 +731,7 @@ class QcqpSolver_affine_simple_fun():
                         #print("total model check time:",self.model_check_timer)
                         self.solver_params=solution
                         results.append((ansval, self.model_check_timer+self.solver_timer+self.encoding_timer))
+                        print("{0}, {1}".format(ansval, self.model_check_timer+self.solver_timer+self.encoding_timer))
                         return results, "policy evaluation passed threshold"
                         #return QcqpResult(self._pVars[initstate].x, parameter_values)
                     #enlarge trust region and update probability and parameter values
@@ -770,28 +769,30 @@ class QcqpSolver_affine_simple_fun():
 
                     if trust_region<1+1e-4:
                         print("Early termination due to small trust region {0}: ".format(str(i)))
-                        solution = dict()
+                        #print("{0}, {1}".format(bestval, self.model_check_timer))
                         return results, "small trust region"
                         #print("p[init] = " + str(ansval))
                         #print("SCP parameter values: ")
                         #for id, param_var in paramVars.items():
                         #    print(str(parameter_names[id]) + "  :  " + str(param_var.x))
                         #return QcqpResult(self._pVars[initstate].x, parameter_values)
-                    print("bestval:",bestval)
+                    #print("bestval:",bestval)
             #safeguard for gurobi failure, contract trust region if this is the case
 
             except AttributeError:
                 trust_region = ((trust_region -1 ) / 1.5 +1)
                 if trust_region <  1+1e-4:
-                    print("Early termination due to small trust region {0}: ".format(str(i)))
+                    print("Early termination due to small trust region with AttributeError{0}: ".format(str(i)))
+                    #print("{0}, {1}".format(bestval, self.model_check_timer))
                     #print("p[init] = " + str(bestval))
                     #print("SCP parameter values: ")
                     return results, "small trust region"
                     #return QcqpResult(bestval, self._paraminit)
                 self._encoding.update()
-            print("total model check time:",self.model_check_timer)
+            #print("total model check time:",self.model_check_timer)
             if self.model_check_timer+self.solver_timer+self.encoding_timer>self._options.timeout:
                 print("Termination due to timeout")
+                #print("{0}, {1}".format(bestval, self.model_check_timer))
                 return results, "timeout of > {}".format(self._options.timeout)
                 #for item in self.solver_output:
                 #    print(item[0], item[1])
@@ -802,6 +803,7 @@ class QcqpSolver_affine_simple_fun():
             self._remove_set = []
 
             self._encoding.update()
+        print("termination due to max iterations reached: " + str(options.maxiter))
         return results, "max iterations reached"
 
 
@@ -813,7 +815,7 @@ def main_drn(path, interval_path, formula_str, threshold, memval=1,timeout=1800,
     opts = stormpy.DirectEncodingParserOptions()
     opts.build_choice_labels = True
     pomdp = stormpy.build_parametric_model_from_drn(path, opts)
-    return main(pomdp, interval_path, formula_str, threshold, memval, path, timeout, maxiter)
+    return main(pomdp, interval_path, formula_str, threshold, memval, path, timeout, maxiter, evaluation_set)
 
 
 def main_prism(path, interval_path, formula_str, threshold, memval=1,timeout=1800, maxiter=200, evaluation_set = []):
@@ -835,8 +837,10 @@ def main_prism(path, interval_path, formula_str, threshold, memval=1,timeout=180
 def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout=1800, maxiter=200, evaluation_set = []):
     model_info = dict()
     model_info["model name"] = path
+    model_info["interval file"] = interval_path
     model_info["objective"] = formula_str
     model_info["timeout"] = timeout
+    model_info["max iterations"] = maxiter
 
     t0 = time.time()
 
@@ -886,11 +890,7 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
     options = QcqpOptions(mu=1e4, maxiter=maxiter, graph_epsilon=1e-2, silent=False,timeout=timeout)
 
 
-    print("Model info:")
-    print(model_info)
-    print("\n")
-
-
+    t1 = time.time()
     solver = QcqpSolver_affine_simple_fun()
     solver_results, solver_exit = solver.run(pmc, fsc_parameters, pomdp_parameters, properties, rew0E, reward_name, threshold, direction,
                         options, intervals, items, True)
@@ -926,15 +926,22 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
         env.solver_environment.native_solver_environment.precision = stormpy.Rational('0.01')
         region_checker = stormpy.pars.create_region_checker(env, instantiated_model, properties[0].raw_formula,
                                                             allow_model_simplification=False)
-        result = region_checker.get_bound_all_states(env, region, maximise=False)
+        result = region_checker.get_bound_all_states(env, region, maximise=True)
         eval_results[eval_set_path] = result.at(pmc.initial_states[0])
+
+        if eval_set_path == interval_path:
+            t1_end = time.time()
+            solver_results.append((eval_results[interval_path], t1_end - t1))
+
         #ansval = result.at(pmc.initial_states[0])
 
     tend = time.time()
 
     print("Final result: ", eval_results[interval_path])
-    print("Total time: ", str(tend - t0))
+    print("Total solver time: ", str(tend - t1))
+    print("Total computation time: ", str(tend - t0))
 
+    model_info["total solver time"] = str(tend - t1)
     model_info["total computation time"] = str(tend - t0)
     model_info["final result"] = eval_results[interval_path]
 
@@ -1197,7 +1204,7 @@ def example_getting_started_06():
 def get_prob01States(model, formulas):
     parameters = model.collect_probability_parameters()
     instantiator = stormpy.pars.PDtmcInstantiator(model)
-    print(parameters)
+    #print(parameters)
 
     point = dict()
     for p in parameters:

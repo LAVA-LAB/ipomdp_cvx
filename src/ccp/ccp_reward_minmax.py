@@ -14,11 +14,12 @@ import ccp.interval_parser as interval_parser
 
 
 class QcqpOptions():
-    def __init__(self, mu, maxiter, graph_epsilon, silent):
+    def __init__(self, mu, maxiter, graph_epsilon, silent, timeout):
         self.mu = mu
         self.maxiter = maxiter
         self.graph_epsilon = graph_epsilon
         self.silent = silent
+        self.timeout = timeout
 
 
 class QcqpResult():
@@ -35,7 +36,9 @@ class QcqpRewSolver():
     def __init__(self):
         self.solver_timer = 0.0
         self.encoding_timer = 0.0
+        self.model_check_timer = 0.0
         self.iterations = 0
+        self.solver_params = None
 
     def run(self, reward_model_name, model, fsc_parameters, fsc_parameters_ids, interval_parameters, interval_parameters_ids, properties,rew0, threshold, direction, options, intervals, polyhedron_state_map, model_check=True):
         """
@@ -105,16 +108,15 @@ class QcqpRewSolver():
                                                             allow_model_simplification=False)
 
         # print("region check")
-        result = region_checker.get_bound_all_states(env, region, maximise=False)
+        result = region_checker.get_bound_all_states(env, region, maximise=True)
         end_check = time.time()
         self.model_check_timer += (end_check - start_check)
         # print("model check time: " + str(model_check_timer))
         ansval = result.at(model.initial_states[0])
 
         results = []
-        print("---------\n")
-        print("{0},{1}".format(ansval, self.model_check_timer + self.encoding_timer + self.solver_timer))
-        print("\n")
+        print("---------\n""result, time\n")
+        print("{0}, {1}".format(ansval, self.model_check_timer + self.encoding_timer + self.solver_timer))
         results.append((ansval, self.model_check_timer + self.encoding_timer + self.solver_timer))
 
         cinit = [threshold for _ in range(numstate)]
@@ -515,10 +517,6 @@ class QcqpRewSolver():
 
             # model checking for early termination:
 
-            maxx = 0
-            trust_region = 2.5
-            bestval = cinit[initstate]
-            model_check_timer = 0.0
 
             if model_check:
                 # print(solution)
@@ -527,6 +525,9 @@ class QcqpRewSolver():
                 for x in fsc_parameters:
                     solution[x] = stormpy.RationalRF(param_values[x.id])
                 # print(solution)
+
+                self.solver_params = solution
+
                 regiondict = dict()
                 for x in interval_parameters:
                     for interval in intervals:
@@ -574,7 +575,7 @@ class QcqpRewSolver():
                                                                     allow_model_simplification=False)
 
                 # print("region check")
-                result = region_checker.get_bound_all_states(env, region, maximise=False)
+                result = region_checker.get_bound_all_states(env, region, maximise=True)
                 end_check = time.time()
                 self.model_check_timer += (end_check - start_check)
                 # print("model check time: " + str(model_check_timer))
@@ -594,7 +595,7 @@ class QcqpRewSolver():
                             str(i)))
                     return results, "slack variables epsilon close to zero"
 
-                if ansval > threshold:
+                if ansval < threshold:
                     print(
                         "Early termination due to positive model checking result at iteration {0}: ".format(
                             str(i)))
@@ -635,6 +636,9 @@ class QcqpRewSolver():
             mu = mu * 2.0
             if mu>1e8:
                 mu=1e8
+
+        print("termination due to max iterations reached: " + str(options.maxiter))
+        return results, "max iterations"
 
 
 
@@ -705,7 +709,10 @@ def main_drn(path, interval_path, formula_str, threshold, memval=1,timeout=1800,
 def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeout=1800, maxiter=200, evaluation_set = []):
     model_info = dict()
     model_info["model name"] = path
+    model_info["interval file"] = interval_path
     model_info["objective"] = formula_str
+    model_info["timeout"] = timeout
+    model_info["max iterations"] = maxiter
 
     t0 = time.time()
 
@@ -741,7 +748,8 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeou
     properties = stormpy.parse_properties(formula_str)
 
     prob0E, prob1A = stormpy.prob01max_states(pmc, properties[0].raw_formula.subformula)
-    rew0E = find_rew0_states(properties[0], pmc)
+    rew0E = find_rew0_states(pmc, properties[0])
+    #rew0E = find_rew0_states(properties[0], pmc)
     reward_name = list(pmc.reward_models.keys())[0]
 
     direction = "below"  # can be "below" or "above"
@@ -766,7 +774,8 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeou
                 current_polyhedrons.append(p)
         polyhedron_state_map[id] = current_polyhedrons
 
-    solver_results, solver_exit = solver.run(reward_name, pmc, fsc_parameters, fsc_parameters_ids, pomdp_parameters, interval_parameters_ids, rew0E, threshold, direction, options, intervals, polyhedron_state_map,True)
+    t1 = time.time()
+    solver_results, solver_exit = solver.run(reward_name, pmc, fsc_parameters, fsc_parameters_ids, pomdp_parameters, interval_parameters_ids, properties, rew0E, threshold, direction, options, intervals, polyhedron_state_map,True)
 
 
 
@@ -799,15 +808,20 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeou
         env.solver_environment.native_solver_environment.precision = stormpy.Rational('0.01')
         region_checker = stormpy.pars.create_region_checker(env, instantiated_model, properties[0].raw_formula,
                                                             allow_model_simplification=False)
-        result = region_checker.get_bound_all_states(env, region, maximise=False)
+        result = region_checker.get_bound_all_states(env, region, maximise=True)
         eval_results[eval_set_path] = result.at(pmc.initial_states[0])
+        if eval_set_path == interval_path:
+            t1_end = time.time()
+            solver_results.append((eval_results[interval_path], t1_end - t1))
         #ansval = result.at(pmc.initial_states[0])
 
     tend = time.time()
 
     print("Final result: ", eval_results[interval_path])
-    print("Total time: ", str(tend - t0))
+    print("Total solver time: ", str(tend - t1))
+    print("Total computation time: ", str(tend - t0))
 
+    model_info["total solver time"] = str(tend - t1)
     model_info["total computation time"] = str(tend - t0)
     model_info["final result"] = eval_results[interval_path]
 

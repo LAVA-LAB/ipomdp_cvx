@@ -65,6 +65,7 @@ class QcqpSolver():
         self.encoding_timer = 0.0
         self.iterations = 0
         self.model_check_timer = 0.0
+        self.solver_params = None
 
     def run(self, model, fsc_parameters, fsc_parameters_ids, interval_parameters, interval_parameters_ids, properties, prob0E, prob1A, threshold, direction, options, intervals, polyhedron_state_map, model_check=True):
         """
@@ -570,17 +571,14 @@ class QcqpSolver():
 
             # model checking for early termination:
 
-            maxx = 0
-            trust_region = 2.5
-            bestval = pinit[initstate]
-            model_check_timer = 0.0
-
             if model_check:
                 # print(solution)
                 option = "max"  # min or max for value iterator
                 solution = dict()
                 for x in fsc_parameters:
                     solution[x] = stormpy.RationalRF(param_values[x.id])
+
+                self.solver_params = solution
                 # print(solution)
                 regiondict = dict()
                 for x in interval_parameters:
@@ -667,7 +665,6 @@ class QcqpSolver():
                                 paraminit[param_id] = param_var.x
                             else:
                                 paraminit[param_id] = options.graph_epsilon
-                    self.solver_params = solution
 
                 m.update()
 
@@ -681,7 +678,7 @@ class QcqpSolver():
             # Updates penalty parameter
             mu = min(mu * (maxp+1), 1e10)
 
-
+        print("termination due to max iterations reached: " + str(options.maxiter))
         return results, "max iterations"
 
 
@@ -714,7 +711,10 @@ def main_drn(path, interval_path, formula_str, threshold, memval=1,timeout=1800,
 def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeout=1800, maxiter=200, evaluation_set = []):
     model_info = dict()
     model_info["model name"] = path
+    model_info["interval file"] = interval_path
     model_info["objective"] = formula_str
+    model_info["timeout"] = timeout
+    model_info["max iterations"] = maxiter
 
     t0 = time.time()
 
@@ -773,7 +773,8 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeou
                 current_polyhedrons.append(p)
         polyhedron_state_map[id] = current_polyhedrons
 
-    solver_results, solver_exit = solver.run(pmc, fsc_parameters, fsc_parameters_ids, pomdp_parameters, interval_parameters_ids, properties, prob0E, prob1A, threshold, direction, options, intervals, polyhedrons, polyhedron_state_map, True)
+    t1 = time.time()
+    solver_results, solver_exit = solver.run(pmc, fsc_parameters, fsc_parameters_ids, pomdp_parameters, interval_parameters_ids, properties, prob0E, prob1A, threshold, direction, options, intervals, polyhedron_state_map)
 
 
 
@@ -808,12 +809,17 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeou
         result = region_checker.get_bound_all_states(env, region, maximise=False)
         eval_results[eval_set_path] = result.at(pmc.initial_states[0])
         #ansval = result.at(pmc.initial_states[0])
+        if eval_set_path == interval_path:
+            t1_end = time.time()
+            solver_results.append((eval_results[interval_path], t1_end - t1))
 
     tend = time.time()
 
     print("Final result: ", eval_results[interval_path])
-    print("Total time: ", str(tend - t0))
+    print("Total solver time: ", str(tend - t1))
+    print("Total computation time: ", str(tend - t0))
 
+    model_info["total solver time"] = str(tend - t1)
     model_info["total computation time"] = str(tend - t0)
     model_info["final result"] = eval_results[interval_path]
 
