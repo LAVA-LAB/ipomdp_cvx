@@ -55,6 +55,21 @@ def ex2_aircraft_nominal():
 
 
 
+def ex2_eps_satellite_prob_nominal():
+
+    run_scp_prob_drn("models/satellite/satellite_prob.drn", "models/satellite/satellite_nominal_eps.intervals",
+                     "Pmax=? [F \"goal\"]", 2, 1, "ex2_scp_satellite_prob_mem1",1800,100,["models/satellite/satellite_small.intervals","models/satellite/satellite_big.intervals"])
+
+    run_scp_prob_drn("models/satellite/satellite_prob.drn", "models/satellite/satellite_nominal_eps.intervals",
+                    "Pmax=? [F \"goal\"]",2, 2, "ex2_scp_satellite_prob_mem2", 1800, 100,
+                  ["models/satellite/satellite_small.intervals", "models/satellite/satellite_big.intervals"])
+
+    run_scp_prob_drn("models/satellite/satellite_prob.drn", "models/satellite/satellite_nominal_eps.intervals",
+                     "Pmax=? [F \"goal\"]", 2, 3, "ex2_scp_satellite_prob_mem3",1800,100,
+                     ["models/satellite/satellite_small.intervals","models/satellite/satellite_big.intervals"])
+
+
+
 
 def ex2_eps_satellite_nominal():
 
@@ -88,15 +103,29 @@ def ex1_eps_satellite():
 
 
 def ex1_intercept():
-    run_scp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals", "Rmin=?[F \"goal\"]", threshold=2, memval=1,runname="ex1_scp_intercept_mem0",timeout=1800, maxiter=100, evaluation_set=["models/intercept/intercept_small.intervals","models/intercept/intercept_nominal.intervals"])
+    #run_scp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals", "Rmin=?[F \"goal\"]", threshold=2, memval=1,runname="ex1_scp_intercept_mem1",timeout=1800, maxiter=100, evaluation_set=["models/intercept/intercept_small.intervals","models/intercept/intercept_nominal.intervals"])
+
+    print("\n\n----------------\n\n")
+
+    run_scp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals", "Rmin=?[F \"goal\"]", threshold=2, memval=2,runname="ex1_scp_intercept_mem2",timeout=1800, maxiter=100, evaluation_set=["models/intercept/intercept_small.intervals","models/intercept/intercept_nominal.intervals"])
+
+    print("\n\n----------------\n\n")
+
+    run_scp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals", "Rmin=?[F \"goal\"]", threshold=2, memval=3,runname="ex1_scp_intercept_mem3",timeout=1800, maxiter=100, evaluation_set=["models/intercept/intercept_small.intervals","models/intercept/intercept_nominal.intervals"])
 
     print("\n\n----------------\n\n")
 
     run_ccp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals",
-                      "Rmin=?[F \"goal\"]", threshold=2, memval=1, runname="ex1_ccp_intercept_mem0", timeout=1800,
+                      "Rmin=?[F \"goal\"]", threshold=2, memval=1, runname="ex1_ccp_intercept_mem1", timeout=1800,
                       maxiter=100, evaluation_set=["models/intercept/intercept_small.intervals",
-
                                                   "models/intercept/intercept_nominal.intervals"])
+
+    # CCP mem=2 will time out before completing the first iteration
+    #run_ccp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals",
+    #                  "Rmin=?[F \"goal\"]", threshold=2, memval=2, runname="ex1_ccp_intercept_mem2", timeout=1800,
+    #                  maxiter=100, evaluation_set=["models/intercept/intercept_small.intervals",
+    #                                              "models/intercept/intercept_nominal.intervals"])
+
 def ex1_aircraft():
 
     run_scp_prob_drn("models/aircraft/aircraft.drn", "models/aircraft/aircraft_big.intervals","Pmax=?[F \"goal\"]",0.99 ,1, "ex1_scp_aircraft_mem1", timeout=1800, maxiter=100, evaluation_set=["models/aircraft/aircraft_small.intervals", "models/aircraft/aircraft_nominal.intervals"])
@@ -136,15 +165,35 @@ def ex1_aircraft():
                      evaluation_set=["models/aircraft/aircraft_small.intervals",
                                      "models/aircraft/aircraft_nominal.intervals"])
 
+def ex1_satellite_prob_eps():
+    run_scp_prob_drn("models/satellite/satellite_prob.drn", "models/satellite/satellite_big.intervals",
+                        "Pmax=? [F \"goal\"]", 2, 1, "ex1_scp_satellite_prob_mem1_eps", 1800, 100,
+                        ["models/satellite/satellite_small.intervals",
+                         "models/satellite/satellite_nominal_eps.intervals"])
+
+    run_scp_prob_drn("models/satellite/satellite_prob.drn", "models/satellite/satellite_big.intervals",
+                        "Pmax=? [F \"goal\"]",
+                        2, 2, "ex1_scp_satellite_prob_mem2_eps", 1800, 100,
+                        ["models/satellite/satellite_small.intervals",
+                         "models/satellite/satellite_nominal_eps.intervals"])
+
+    run_scp_prob_drn("models/satellite/satellite_prob.drn", "models/satellite/satellite_big.intervals",
+                        "Pmax=? [F \"goal\"]", 2, 3, "ex1_scp_satellite_prob_mem3_eps", 1800, 100,
+                        ["models/satellite/satellite_small.intervals",
+                         "models/satellite/satellite_nominal_eps.intervals"])
+
 
 def all():
     ex1_intercept()
-    #ex1_aircraft()
+    ex1_aircraft()
     ex1_eps_satellite()
+    ex1_satellite_prob_eps()
+
     ex2_eps_satellite_nominal()
-    #ex2_eps_aircraft_nominal()
-    #ex2_aircraft_nominal()
-    #ex2_intercept_nominal()
+    ex2_eps_aircraft_nominal()
+    ex2_aircraft_nominal()
+    ex2_intercept_nominal()
+    ex2_eps_satellite_prob_nominal()
 
 if __name__ == "__main__":
     all()
