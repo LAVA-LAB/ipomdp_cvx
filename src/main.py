@@ -86,6 +86,37 @@ def run_scp_rew_drn(model_path, intervals_path, spec, threshold, memval, runname
     save_eval_results(eval_results, "results/evaluation_results_{0}.txt".format(runname))
 
 
+
+
+def test_all():
+    print("testing all methods")
+    print("--------------------\n\n\ntesting scp prob\n\n\n")
+    run_scp_prob_drn("models/aircraft/aircraft.drn", "models/aircraft/aircraft_big.intervals","Pmax=?[F \"goal\"]",
+                     0.99 ,1, "test_scp_prob",
+                     timeout=1800, maxiter=10,
+                     evaluation_set=["models/aircraft/aircraft_small.intervals", "models/aircraft/aircraft_nominal.intervals"])
+
+
+    print("--------------------\n\n\ntesting ccp prob\n\n\n")
+    run_ccp_prob_drn("models/aircraft/aircraft.drn", "models/aircraft/aircraft_big.intervals", "Pmax=?[F \"goal\"]",
+                     0.99, 1, "test_ccp_prob",
+                     timeout=1800, maxiter=10,
+                     evaluation_set=["models/aircraft/aircraft_small.intervals",
+                                     "models/aircraft/aircraft_nominal.intervals"])
+
+    print("--------------------\n\n\ntesting scp rew\n\n\n")
+    run_scp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals", "Rmin=?[F \"goal\"]",
+                      threshold=2, memval=1,runname="test_scp_rew",timeout=1800, maxiter=10,
+                      evaluation_set=["models/intercept/intercept_small.intervals","models/intercept/intercept_nominal.intervals"])
+
+    print("--------------------\n\n\ntesting ccp rew\n\n\n")
+    run_ccp_rew_prism("models/intercept/intercept3.prism", "models/intercept/intercept_big.intervals", "Rmin=?[F \"goal\"]",
+                      threshold=2, memval=1,runname="test_ccp_rew",timeout=1800, maxiter=10,
+                      evaluation_set=["models/intercept/intercept_small.intervals","models/intercept/intercept_nominal.intervals"])
+
+    print("--------------------\n\n\nDONE")
+
+
 if __name__ == '__main__':
     args = vars(parse_args())
     prism = args['prism']
@@ -99,7 +130,11 @@ if __name__ == '__main__':
     runname = args['name']
     timeout = args['timeout']
     maxiter = args['maxiter']
+    test = args['test']
 
+    if test:
+        test_all()
+        exit()
 
 
     if method == "ccp":

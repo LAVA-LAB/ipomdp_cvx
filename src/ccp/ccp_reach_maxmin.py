@@ -124,18 +124,7 @@ class QcqpSolver():
         env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
         env.solver_environment.native_solver_environment.precision = stormpy.Rational('0.01')
 
-        #env = stormpy.Environment()
 
-        #env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.eigen)
-        #env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-
-        # old stuff i guess(?)
-        # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-        # env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-
-        # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-        # env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
-        # env.solver_environment.native_solver_environment.precision = stormpy.Rational("0.01")
         start_check = time.time()
 
         region_checker = stormpy.pars.create_region_checker(env, instantiated_model,
@@ -156,12 +145,6 @@ class QcqpSolver():
         results.append((ansval, self.model_check_timer + self.encoding_timer + self.solver_timer))
 
 
-        #print("model checking init result: " + str(ansval))
-        #for x in fsc_parameters:
-        #    for y in interval_parameters:
-        #        if x.id == y.id:
-        #            print("EQUAL IDs")
-        #print("EQUALITY CHECK DONE")
 
         #paraminit = dict([[x.id, 0.5]] for x in fsc_parameters)
         pinit = [threshold for _ in range(numstate)]
@@ -185,26 +168,17 @@ class QcqpSolver():
             #cVars = [m.addVar(lb=0, ub=1.0) for _ in range(numstate)]
 
             tau = [m.addVar(lb=0,name="t"+str(i)) for i in range(numstate)]
-            #taucost = [m.addVar(lb=0) for _ in range(numstate)]
 
-            #tt = m.addVar(lb=0.0, name="TT")
-
-            #paramVars = dict([[x.id, m.addVar(lb=0)] for x in parameters if not x.name[0] == 'I'])
 
             paramVars = {}
             for x in fsc_parameters:
                 paramVars[x.id] = m.addVar(lb=options.graph_epsilon,ub=1-options.graph_epsilon,name="param"+str(x.id))
 
-            #print("ParamVars")
-            #print(paramVars)
-            #print("---")
+
 
 
             # A counter to check number of transitions
             numtrans = 0
-            # List of constraints
-            #constraints = []
-            # Updates the model for gurobi
             m.update()
             #print(pVars)
 
@@ -216,11 +190,7 @@ class QcqpSolver():
 
                 # Find the polyhedrons at the current state
                 current_polyhedrons = polyhedron_state_map[state.id]
-                #for p in polyhedrons:
-                #    #print(type(p.state))
-                #    #print(type(state.id))
-                #    if int(p.state) == int(state.id):
-                #        current_polyhedrons.append(p)
+
 
                 if len(current_polyhedrons) == 0:
                     # non robust constraint:
@@ -492,15 +462,7 @@ class QcqpSolver():
                                     m.addConstr(pVars[state.id] <= cons+ tau[state.id])
                             #print(state.id,pVars[state.id])
 
-            ##Adds constraints for prob1 and prob0 state
-        #    for state in range(numstate):
-        #        if prob1A.get(state):
-        #            m.addConstr(pVars[state] == 1)
-        #        elif prob0E.get(state):
-        #            m.addConstr(pVars[state] == 0)
 
-            # Constraint for initial state
-            ######This constraint is reversed for above
 
             m.addConstr(pVars[initstate] >= threshold)
             objective = 0.0
@@ -512,8 +474,7 @@ class QcqpSolver():
                 objective = objective + tau[state]
                 objective = objective - pVars[state]/mu
 
-            # Maximize the probability of initial state
-      #      objective = objective - pVars[initstate]
+
             self.encoding_timer += (time.time() - encoding_start)
 
             start3 = time.time()
@@ -521,26 +482,18 @@ class QcqpSolver():
             m.setObjective(objective, GRB.MINIMIZE)
 
 
-            # write model to a file for debugging
-            #m.write("last_model.mps")
-
-            #print('Solving...')
             m.optimize()
 
             t3 = time.time()
             self.solver_timer += (t3 - start3)
 
-            #print("Solver time :" + str(t3 - start3))
-            # Prints the maximum violation
             maxx = 0
             for state in range(numstate):
                 val = tau[state].x
                 if val > maxx:
                     maxx = val
 
-            #if not options.silent:
-            #    print("Max vio :", maxx)
-            #    print("p =", pVars[initstate].x)
+
 
             # Breaks if the violation is small and prints number of iterations and total time
 
@@ -598,28 +551,6 @@ class QcqpSolver():
                 env.solver_environment.native_solver_environment.precision = stormpy.Rational('0.01')
 
 
-                # settings 1
-                #env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                #env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.optimistic_value_iteration
-                #env.solver_environment.minmax_solver_environment.precision = stormpy.Rational("0.01")
-
-                # settings 2
-                #env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                #env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-                #env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
-                #env.solver_environment.native_solver_environment.precision = stormpy.Rational("0.01")
-
-                # settings 3
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.eigen)
-                # env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-
-                # old stuff i guess(?)
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                # env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                # env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
-                # env.solver_environment.native_solver_environment.precision = stormpy.Rational("0.01")
                 start_check = time.time()
 
                 region_checker = stormpy.pars.create_region_checker(env, instantiated_model,
@@ -824,44 +755,6 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="", timeou
     model_info["final result"] = eval_results[interval_path]
 
     return model_info, solver_results, eval_results
-
-
-
-
-
-
-    """
-    #compute the policy against the robust interval
-    #interval_path="collision_partial_obs_2d_upd_hobs_20_small.intervals"
-    #intervals, polyhedrons,items = interval_parser.parse_model_interval(pmc,pomdp_parameters,interval_path)
-    regiondict = dict()
-    for x in pomdp_parameters:
-        for item in items:
-            if item.name == x.name:
-                regiondict[x] = (stormpy.RationalRF(item.lowerbound), stormpy.RationalRF(item.upperbound))
-    region = stormpy.pars.ParameterRegion(regiondict)
-    instantiator = stormpy.pars.PartialPDtmcInstantiator(pmc)
-    instantiated_model = instantiator.instantiate(solver.solver_params)
-    env = stormpy.Environment()
-    env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.eigen)
-    env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
-    env.solver_environment.native_solver_environment.precision = stormpy.Rational('0.01')
-    region_checker = stormpy.pars.create_region_checker(env, instantiated_model, properties[0].raw_formula,
-                                                                        allow_model_simplification=False)
-    result = region_checker.get_bound_all_states(env, region, maximise=False)
-    ansval=result.at(pmc.initial_states[0])
-    tend = time.time()
-
-    print("\n\n----------")
-    print("Final result: ", ansval)
-    print("Total time: ", str(tend - t0))
-
-    model_info["total computation time"] = str(tend - t0)
-    model_info["final result"] = ansval
-
-    return model_info, solver_results
-    """
-
 
 
 

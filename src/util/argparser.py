@@ -78,4 +78,11 @@ def parse_args():
         help="maximum nr of iterations"
     )
 
+    parser.add_argument(
+        "--test",
+        type=bool,
+        default=False,
+        help="run tests"
+    )
+
     return parser.parse_args()

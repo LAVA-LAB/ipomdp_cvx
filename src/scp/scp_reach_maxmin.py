@@ -794,15 +794,10 @@ def test():
 def main_prism(path, interval_path, formula_str, threshold, memval=1,timeout=1800, maxiter=200, evaluation_set = []):
     prism_program = stormpy.parse_prism_program(path)
 
-    # formula_str = "P=? [!\"bad\" U \"goal\"]"
-    # formula_str = "P=? [F \"goal\"]"
-    # interval_path="collision_partial_obs_2d_upd_hobs_20_small.intervals"
     opts = stormpy.DirectEncodingParserOptions()
     opts.build_choice_labels = True
     properties = stormpy.parse_properties_for_prism_program(formula_str, prism_program)
-    # construct the pPOMDP
-    #import inspect
-    #print(inspect.getfullargspec(stormpy.build_parametric_model))
+
     pomdp = stormpy.build_parametric_model(prism_program, properties)
     pomdp_parameters = pomdp.collect_probability_parameters()
     return main(pomdp, interval_path, formula_str, threshold, memval, path, timeout, maxiter, evaluation_set)
@@ -846,21 +841,9 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
     pmc = stormpy.pomdp.apply_unknown_fsc(pomdp, stormpy.pomdp.PomdpFscApplicationMode.simple_linear)
 
 
-
-    #path_pmc = "export_" + str(memval) + "_mem"
-    #stormpy.export_to_drn(pmc, path_pmc)
-
     fsc_parameters = pmc.collect_probability_parameters() - pomdp.collect_probability_parameters()
 
     intervals, polyhedrons, items = interval_parser.parse_model_interval(pmc,pomdp_parameters,interval_path)
-    #for item in intervals:
-        #print(item,"printing in the main")
-    #for item in items:
-    #    print(item,"printing in the main")
-
-    #for p in polyhedrons:
-        #print(p)
-    #    p.compute_vertices()
 
 
     properties = stormpy.parse_properties(formula_str)
@@ -924,43 +907,6 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
 
 
 
-
-
-
-
-
-
-    """
-    #compute the policy against the robust interval
-    #interval_path="collision_partial_obs_2d_upd_hobs_20_small.intervals"
-    #intervals, polyhedrons,items = interval_parser.parse_model_interval(pmc,pomdp_parameters,interval_path)
-    regiondict = dict()
-    for x in pomdp_parameters:
-        for item in items:
-            if item.name == x.name:
-                regiondict[x] = (stormpy.RationalRF(item.lowerbound), stormpy.RationalRF(item.upperbound))
-    region = stormpy.pars.ParameterRegion(regiondict)
-    instantiator = stormpy.pars.PartialPDtmcInstantiator(pmc)
-    instantiated_model = instantiator.instantiate(solver.solver_params)
-    env = stormpy.Environment()
-    env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.eigen)
-    env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
-    env.solver_environment.native_solver_environment.precision = stormpy.Rational('0.01')
-    region_checker = stormpy.pars.create_region_checker(env, instantiated_model, properties[0].raw_formula,
-                                                                        allow_model_simplification=False)
-    result = region_checker.get_bound_all_states(env, region, maximise=False)
-    ansval=result.at(pmc.initial_states[0])
-    tend = time.time()
-
-    print("\n\n----------")
-    print("Final result: ", ansval)
-    print("Total time: ", str(tend - t0))
-
-    model_info["total computation time"] = str(tend - t0)
-    model_info["final result"] = ansval
-
-    return model_info, solver_results
-    """
 
 
 if __name__ == '__main__':

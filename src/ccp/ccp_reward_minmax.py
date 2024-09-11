@@ -80,10 +80,6 @@ class QcqpRewSolver():
             solution[x] = stormpy.RationalRF(paraminit[x.id])
 
 
-        # Initializing some arrays for state, parameter and tau variables, and their values at previous iterations
-        #paraminit = dict([[x.id, 0.5] for x in parameters_rew if not x.name[0] == 'I'])
-     #   pinit = [0.5 for _ in range(numstate)]
-        #cinit = [threshold for _ in range(numstate)]
 
         regiondict = dict()
         for x in interval_parameters:
@@ -158,8 +154,6 @@ class QcqpRewSolver():
                 paramVars[x.id] = m.addVar(lb=options.graph_epsilon, ub=1 - options.graph_epsilon,
                                            name="param" + str(x.id))
 
-            #paramVars = dict([[x.id, m.addVar(lb=0)] for x in parameters_rew if not x.name[0] == 'I'])
-            #print(parameters_rew)
 
             # A counter to check number of transitions
             numtrans = 0
@@ -546,28 +540,6 @@ class QcqpRewSolver():
                 env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
                 env.solver_environment.native_solver_environment.precision = stormpy.Rational('0.01')
 
-                # settings 1
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                # env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.optimistic_value_iteration
-                # env.solver_environment.minmax_solver_environment.precision = stormpy.Rational("0.01")
-
-                # settings 2
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                # env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-                # env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
-                # env.solver_environment.native_solver_environment.precision = stormpy.Rational("0.01")
-
-                # settings 3
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.eigen)
-                # env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-
-                # old stuff i guess(?)
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                # env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-
-                # env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.native)
-                # env.solver_environment.native_solver_environment.method = stormpy.NativeLinearEquationSolverMethod.optimistic_value_iteration
-                # env.solver_environment.native_solver_environment.precision = stormpy.Rational("0.01")
                 start_check = time.time()
 
                 region_checker = stormpy.pars.create_region_checker(env, instantiated_model,
@@ -620,19 +592,6 @@ class QcqpRewSolver():
 
                 m.update()
 
-
-
-
-            # Updares the parameter values for next iteration
-            #for param_id, param_var in paramVars.items():
-            #    if not isinstance(param_var, int):
-            #        if abs(param_var.x) > options.graph_epsilon:
-                        #  print pVar
-            #            paraminit[param_id] = param_var.x
-            #        else:
-
-            #            paraminit[param_id] = param_var.x
-            # Updates penalty parameter
             mu = mu * 2.0
             if mu>1e8:
                 mu=1e8

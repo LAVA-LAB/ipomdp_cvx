@@ -190,10 +190,12 @@ def all():
     ex1_satellite_prob_eps()
 
     ex2_eps_satellite_nominal()
-    ex2_eps_aircraft_nominal()
     ex2_aircraft_nominal()
     ex2_intercept_nominal()
     ex2_eps_satellite_prob_nominal()
+
+
+
 
 if __name__ == "__main__":
     all()

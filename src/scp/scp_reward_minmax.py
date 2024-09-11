@@ -863,21 +863,9 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
     pmc = stormpy.pomdp.apply_unknown_fsc(pomdp, stormpy.pomdp.PomdpFscApplicationMode.simple_linear)
 
 
-
-    #path_pmc = "export_" + str(memval) + "_mem"
-    #stormpy.export_to_drn(pmc, path_pmc)
-
     fsc_parameters = pmc.collect_probability_parameters() - pomdp.collect_probability_parameters()
 
     intervals, polyhedrons, items = interval_parser.parse_model_interval(pmc, pomdp_parameters, interval_path)
-    # for item in intervals:
-    # print(item,"printing in the main")
-    # for item in items:
-    #    print(item,"printing in the main")
-
-    # for p in polyhedrons:
-    # print(p)
-    #    p.compute_vertices()
 
 
 
@@ -900,12 +888,6 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
     model_info["total iterations"] = solver.iterations
     model_info["total solver time"] = solver.solver_timer
     model_info["exit code"] = solver_exit
-
-    # compute the policy against the robust interval
-    # interval_path="collision_partial_obs_2d_upd_hobs_20_small.intervals"
-
-
-    # intervals, polyhedrons,items = interval_parser.parse_model_interval(pmc,pomdp_parameters,interval_path)
 
     interval_set = [interval_path] + evaluation_set
     eval_results = dict()
@@ -949,258 +931,6 @@ def main(pomdp, interval_path, formula_str, threshold, memval=1, path="",timeout
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #construct the pomdp from pomdp-drn
-    #path = "pomdp_attempt_prob_rew_36_sat_065_dist_5_obs_diff_orb_len_1.drn"
-
-    #formula_str = "R=? [F \"goal\"]"
-    # adapt into lower and upper model
-
-
-    #interval_path="satellite_rew_robust.intervals"
-    # construct the pPOMDP
-    #pomdp = stormpy.build_parametric_model(prism_program, properties)
-
-    # pomdp_parameters = pomdp.collect_probability_parameters()
-    # make its representation canonic.
-    # pomdp = stormpy.pomdp.make_canonic(pomdp)
-    #stormpy.export_parametric_to_drn(pomdp, "export_pomdp.drn")
-
-    # construct the memory for the FSC
-    # in this case, a selective counter with two states
-    # memory_builder = stormpy.pomdp.PomdpMemoryBuilder()
-    #number of memory states
-    #memval=1
-    #memory = memory_builder.build(stormpy.pomdp.PomdpMemoryPattern.selective_counter, memval)
-    # apply the memory onto the POMDP to get the cartesian product
-    #pomdp = stormpy.pomdp.unfold_memory(pomdp, memory)
-    #print("Number of pomdp states before simple:",pomdp.nr_states)
-    #print("Number of transitions: {}".format(pomdp.nr_transitions))
-
-    # make the POMDP simple. This step is optional but often beneficial
-    #pomdp = stormpy.pomdp.make_simple(pomdp)
-    #print("Number of pomdp states after simple:",pomdp.nr_states)
-    #print("Number of transitions: {}".format(pomdp.nr_transitions))
-
-    # apply the unknown FSC to obtain a pmc from the POMDP
-    #pmc = stormpy.pomdp.apply_unknown_fsc(pomdp, stormpy.pomdp.PomdpFscApplicationMode.simple_linear)
-    #print("Number of pomdp states after simple",pmc.nr_states)
-    #print("Number of transitions: {}".format(pmc.nr_transitions))
-    #print("applied pmc")
-    #path_pmc = "export_" + str(memval) + "_mem"
-    #stormpy.export_to_drn(pmc, path_pmc)
-    #print("built model")
-    #print(model.initial_states)
-    #fsc_parameters = pmc.collect_probability_parameters() - pomdp.collect_probability_parameters()
-    #print("number of pomdp parameters:",len(fsc_parameters))
-    #print(fsc_parameters)
-    #print(pomdp_parameters)
-    # gather intervals and items
-    #intervals, polyhedrons,items = interval_parser.parse_model_interval(pmc,pomdp_parameters,interval_path)
-
-    #for item in items:
-    #    print(item,"printing in the main")
-
-    #properties = stormpy.parse_properties(formula_str)
-    #print("Building model")
-    #parameters = model.collect_probability_parameters()
-    #print(pmc.nr_states)
-    #compute prob01max states
-    #rew0E = find_rew0_states(properties[0], pmc)
-    #reward_name = list(pmc.reward_models.keys())[0]
-    #threshold = 1
-    #direction = "below"  # can be "below" or "above"
-    #options = QcqpOptions(mu=1e4, maxiter=1000, graph_epsilon=2e-2, silent=False)
-
-    # run solver
-    #solver = QcqpSolver_affine_simple_fun()
-    #result = solver.run(pmc,  fsc_parameters, pomdp_parameters,properties, rew0E, reward_name,threshold, direction, options,intervals,items,True)
-
-    #print("number of iterations={}".format(solver.iterations))
-    #print("solver time={}".format(solver.solver_timer))
-
-    #print("solver time={}".format(solver.solver_timer))
-    #compute the policy against the robust interval
-
-    #intervals, polyhedrons,items = interval_parser.parse_model_interval(pmc,pomdp_parameters,interval_path)
-    #regiondict = dict()
-    #for x in pomdp_parameters:
-    #    for item in items:
-    #        if item.name == x.name:
-    #            regiondict[x] = (stormpy.RationalRF(item.lowerbound), stormpy.RationalRF(item.upperbound))
-    #region = stormpy.pars.ParameterRegion(regiondict)
-    #instantiator = stormpy.pars.PartialPDtmcInstantiator(pmc)
-    #instantiated_model = instantiator.instantiate(solver.solver_params)
-                    #assert interval_parameters == instantiated_model.collect_probability_parameters()
-
-    #env = stormpy.Environment()
-    #env.solver_environment.set_linear_equation_solver_type(stormpy.EquationSolverType.eigen)
-    #env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.policy_iteration
-                    #env.solver_environment.minmax_solver_environment.method = stormpy.MinMaxMethod.optimistic_value_iteration
-
-    #start_check = time.time()
-
-    #region_checker = stormpy.pars.create_region_checker(env, instantiated_model, properties[0].raw_formula,
-    #                                                                    allow_model_simplification=False)
-
-    #print("region check")
-    #result = region_checker.get_bound_all_states(env, region, maximise=False)
-    #end_check = time.time()
-    #print("model checking ans:")
-    #ansval=result.at(pmc.initial_states[0])
-    #print(ansval)
-
-def test_drn():
-    path = "parametric_maze.pm"
-    prism_program = stormpy.parse_prism_program(path)
-
-    #formula_str = "P=? [!\"bad\" U \"goal\"]"
-    formula_str = "P=? [F \"goal\"]"
-    interval_path="parametric_maze.intervals"
-
-    properties = stormpy.parse_properties_for_prism_program(formula_str, prism_program)
-    # construct the pPOMDP
-    pomdp = stormpy.build_parametric_model(prism_program, properties)
-
-
-    path = "export_5_mem_pomdp_attempt_prob_36_sat_065_dist_5_obs_diff_orb_len_1.drn"
-    print(path)
-    formula_str = "P=? [F \"goal\"]"
-    # adapt into lower and upper model
-    #opts = stormpy.DirectEncodingParserOptions()
-    #opts.build_choice_labels = True
-    pmc = stormpy.build_parametric_model_from_drn(path)
-    print("number of pmc states ",pmc.nr_states)
-    print("Number of transitions: {}".format(pmc.nr_transitions))
-    path = "pomdp_attempt_prob_36_sat_065_dist_5_obs_diff_orb_len_1.drn"
-    #pomdp = stormpy.build_parametric_model_from_drn(path)
-    #print("number of pomdp states",pomdp.nr_states)
-    #print("Number of transitions: {}".format(pomdp.nr_transitions))
-    #
-    # properties = stormpy.parse_properties(formula_str)
-
-    #formula_str = "P=? [!\"bad\" U \"goal\"]"
-
-    interval_path="satellite.intervals"
-    #properties = stormpy.parse_properties_for_prism_program(formula_str, prism_program)
-    # construct the pPOMDP
-    #pomdp = stormpy.build_parametric_model(prism_program, properties)
-
-    #pomdp_parameters = pmc.collect_probability_parameters()
-    # make its representation canonic.
-    #pomdp = stormpy.pomdp.make_canonic(pomdp)
-    #stormpy.export_parametric_to_drn(pomdp, "export_pomdp.drn")
-
-    # construct the memory for the FSC
-    # in this case, a selective counter with two states
-
-    #fsc_parameters = pmc.collect_probability_parameters() - pomdp.collect_probability_parameters()
-    parameters=pmc.collect_probability_parameters()
-    pomdp_parameters=set()
-    fsc_parameters=set()
-    for item in parameters:
-        if not item.name[0]=="p":
-
-            pomdp_parameters.add(item)
-        else:
-            fsc_parameters.add(item)
-            #print(item)
-    #print(fsc_parameters)
-    #print(pomdp_parameters)
-    #print(type(fsc_parameters))
-    #print(dir(fsc_parameters))
-
-    #print(pomdp.collect_probability_parameters())
-    print("number of pomdp parameters:",len(fsc_parameters))
-    #intervals2, polyhedrons = interval_parser.parse_input(interval_path)
-    intervals, polyhedrons,items = interval_parser.parse_model_interval(pmc,pomdp_parameters,interval_path)
-    #for item in intervals:
-        #print(item,"printing in the main")
-    for item in items:
-        print(item,"printing in the main")
-    for p in polyhedrons:
-        #print(p)
-        p.compute_vertices()
-
-
-
-    properties = stormpy.parse_properties(formula_str)
-    print("Building model from {}".format(path))
-    #parameters = model.collect_probability_parameters()
-    print(pmc.nr_states)
-
-    prob0E, prob1A = stormpy.prob01max_states(pmc, properties[0].raw_formula.subformula)
-
-    threshold = 0.1
-    direction = "below"  # can be "below" or "above"
-    options = QcqpOptions(mu=1e4, maxiter=200, graph_epsilon=1e-2, silent=False)
-
-    # result = solver.run(reward_model_name ,model_rew, parameters_rew, rew0, rew_threshold, direction, options)
-    solver = QcqpSolver_affine_simple_fun()
-    result = solver.run(pmc, fsc_parameters, pomdp_parameters,properties, prob0E, prob1A, threshold, direction, options,intervals,items,True)
-
-    print("number of iterations={}".format(solver.iterations))
-    print("solver time={}".format(solver.solver_timer))
-
-    print("solver time={}".format(solver.solver_timer))
-
-
-
-def example_getting_started_06():
-    path = "/home/lmc3696/Desktop/research/codes/qcqp_codes/pomdp/pomdp_casestudies/4x4grid_sl_avoid_standard_m2.drn"
-    formula_str = 'P=? [F "goal" ]'
-
-    # adapt into lower and upper model
-    model = stormpy.build_parametric_model_from_drn(path)
-
-    properties = stormpy.parse_properties(formula_str)
-
-    #  formulas = stormpy.parse_properties_for_prism_program(formula_str, path)
-  #  properties = stormpy.parse_properties_for_prism_program(formula_str, path)
-   # model = stormpy.build_parametric_model(path, properties)
-    print("Building model from {}".format(path))
-
-
-    threshold = 0.975
-    direction = "below"  # can be "below" or "above"
-    options = QcqpOptions(mu=100, maxiter=200, graph_epsilon=1e-6, silent=False)
-
-    parameters = model.collect_probability_parameters()
-    prob0E, prob1A = stormpy.prob01max_states(model, properties[0].raw_formula.subformula)
-    print(prob1A)
-    #
-
-    #result = solver.run(reward_model_name ,model_rew, parameters_rew, rew0, rew_threshold, direction, options)
-    solver = QcqpSolver_affine()
-    result = solver.run(model, parameters, properties, prob0E, prob1A, threshold, direction, options, polyhedrons,False)
-    parameter_assignments = dict([[x, result.parameter_values[x.id]] for x in parameters])
-    #print(parameter_assignments)
-    instantiator = stormpy.pars.PDtmcInstantiator(model)
-
-    # # Check distance to result by storm (notice that also the point that storm checks slightly differs)
-    rational_parameter_assignments = dict([[x, stormpy.RationalRF(val)] for x, val in parameter_assignments.items()])
-    #print(rational_parameter_assignments)
-    instantiated_model = instantiator.instantiate(rational_parameter_assignments)
-    mc_res = stormpy.model_checking(instantiated_model, properties[0]).at(model.initial_states[0])
-
-    print("Qcqp: {}: Mc: {}".format(result.value_at_initial, mc_res))
-
-    print("iternum={}".format(solver.iterations))
-    print("solver time={}".format(solver.solver_timer))
-
-
 def get_prob01States(model, formulas):
     parameters = model.collect_probability_parameters()
     instantiator = stormpy.pars.PDtmcInstantiator(model)
@@ -1237,6 +967,8 @@ def find_rew0_states(property, model):
     psi_states = psi_result.get_truth_values()
     return psi_states
     # (prob0A, prob1E) = stormpy.compute_prob01max_states(model, phiStates, psiSta
+
+
 if __name__ == '__main__':
     path = ""
     interval_path = ""
